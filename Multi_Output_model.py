@@ -76,8 +76,9 @@ norm_test_X = norm(test)
 # Define model layers.
 input_layer = Input(shape=(len(train .columns),))
 first_dense = Dense(units='128', activation='relu')(input_layer)
-second_dense = Dense(units='128', activation='relu')(first_dense)
-second_dense= Dropout(0.2)(second_dense)
+second_dense= Dropout(0.2)(first_dense)
+second_dense = Dense(units='128', activation='relu')(second_dense)
+
 # Y1 output will be fed directly from the second dense
 y1_output = Dense(units='1', name='y1_output')(second_dense)
 third_dense = Dense(units='64', activation='relu')(second_dense)
@@ -91,7 +92,7 @@ model = Model(inputs=input_layer, outputs=[y1_output, y2_output])
 print(model.summary())
 
 
-optimizer = tf.keras.optimizers.Adam(lr=0.001)
+optimizer = tf.keras.optimizers.SGD(lr=0.001)
 model.compile(optimizer=optimizer,
               loss={'y1_output': 'mse', 'y2_output': 'mse'},
               metrics={'y1_output': tf.keras.metrics.RootMeanSquaredError(),
@@ -104,6 +105,8 @@ history = model.fit(norm_train_X, train_Y,
 loss, Y1_loss, Y2_loss, Y1_rmse, Y2_rmse = model.evaluate(x=norm_test_X, y=test_Y)
 print("Loss = {}, Y1_loss = {}, Y1_mse = {}, Y2_loss = {}, Y2_mse = {}".format(loss, Y1_loss, Y1_rmse, Y2_loss, Y2_rmse))
 
+
+print(history.history.keys())
 Y_pred = model.predict(norm_test_X)
 plot_diff(test_Y[0], Y_pred[0], title='Y1')
 plot_diff(test_Y[1], Y_pred[1], title='Y2')
